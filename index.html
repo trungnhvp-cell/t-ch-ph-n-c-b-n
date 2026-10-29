@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn tập Tích phân - Đổi biến & Từng phần</title>
+<script>
+MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin: 0; background: #f0f4f8; color: #1a202c; line-height: 1.6; }
+  header { background: linear-gradient(135deg,#1e3a8a,#2563eb); color:#fff; padding: 24px 20px; text-align:center; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  header h1 { margin:0 0 6px; font-size: 24px; }
+  header p { margin:0; opacity:.9; font-size:14px; }
+  .tabs { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; background:#fff; padding:12px; box-shadow:0 2px 6px rgba(0,0,0,.08); position:sticky; top:0; z-index:100; }
+  .tab-btn { padding:10px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; background:#e2e8f0; color:#334155; transition:all .2s; }
+  .tab-btn:hover { background:#cbd5e1; }
+  .tab-btn.active { background:#2563eb; color:#fff; box-shadow:0 2px 8px rgba(37,99,235,.4); }
+  .container { max-width:1000px; margin: 20px auto; padding: 0 16px; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .sub-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .sub-btn { padding:8px 14px; border:2px solid #cbd5e1; background:#fff; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; color:#334155; }
+  .sub-btn.active { border-color:#2563eb; background:#dbeafe; color:#1e40af; }
+  .card { background:#fff; border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .card h3 { margin-top:0; color:#1e3a8a; border-bottom:2px solid #dbeafe; padding-bottom:8px; }
+  .formula-box { background:#f8fafc; border-left:4px solid #2563eb; padding:12px 16px; margin:10px 0; border-radius:6px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; margin-right:6px; }
+  .badge-nb { background:#d1fae5; color:#065f46; }
+  .badge-th { background:#fef3c7; color:#92400e; }
+  .badge-vd { background:#fee2e2; color:#991b1b; }
+  .badge-vdc { background:#ede9fe; color:#5b21b6; }
+  
+  /* Question styling */
+  .q-block { background:#fff; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 1px 4px rgba(0,0,0,.06); border-left:4px solid #2563eb; }
+  .q-block.correct { border-left-color:#10b981; background:#f0fdf4; }
+  .q-block.wrong { border-left-color:#ef4444; background:#fef2f2; }
+  .q-title { font-weight:600; margin-bottom:10px; }
+  .options { display:flex; flex-direction:column; gap:6px; }
+  .opt { padding:10px 14px; border:2px solid #e2e8f0; border-radius:8px; cursor:pointer; transition:all .15s; background:#fff; }
+  .opt:hover { border-color:#93c5fd; background:#eff6ff; }
+  .opt.selected { border-color:#2563eb; background:#dbeafe; }
+  .opt.correct-ans { border-color:#10b981; background:#d1fae5; }
+  .opt.wrong-ans { border-color:#ef4444; background:#fee2e2; }
+  .opt.disabled { cursor:not-allowed; }
+  .solution { margin-top:12px; padding:12px; background:#f8fafc; border-left:3px solid #10b981; border-radius:6px; display:none; font-size:14px; }
+  .solution.show { display:block; }
+  .hint { margin-top:8px; padding:10px 12px; background:#fef3c7; border-left:3px solid #f59e0b; border-radius:6px; font-size:13px; display:none; }
+  .hint.show { display:block; }
+  
+  /* Timer */
+  .timer-bar { background:#fff; padding:14px 20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); position:sticky; top:60px; z-index:50; flex-wrap:wrap; gap:10px; }
+  .timer { font-size:22px; font-weight:700; color:#dc2626; font-family:'Courier New',monospace; }
+  .timer.warn { color:#f59e0b; }
+  .timer.ok { color:#10b981; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; transition:all .2s; }
+  .btn-primary { background:#2563eb; color:#fff; }
+  .btn-primary:hover { background:#1d4ed8; }
+  .btn-success { background:#10b981; color:#fff; }
+  .btn-success:hover { background:#059669; }
+  .btn-danger { background:#ef4444; color:#fff; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  
+  .result-box { background:#fff; padding:20px; border-radius:12px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); display:none; }
+  .result-box.show { display:block; }
+  .score-display { font-size:36px; font-weight:800; color:#2563eb; text-align:center; margin:10px 0; }
+  .stat-row { display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px; margin:16px 0; }
+  .stat-item { text-align:center; padding:10px 20px; background:#f1f5f9; border-radius:8px; min-width:100px; }
+  .stat-item .num { font-size:24px; font-weight:700; }
+  .stat-item .lbl { font-size:12px; color:#64748b; }
+  .review-list { background:#fef2f2; padding:14px; border-radius:8px; margin-top:12px; }
+  .review-list h4 { margin:0 0 10px; color:#991b1b; }
+  .review-list ul { margin:0; padding-left:20px; font-size:14px; }
+  .review-list li { margin-bottom:6px; }
+  
+  @media(max-width:600px) { header h1 { font-size:18px; } .tab-btn { padding:8px 12px; font-size:12px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📐 Ôn tập Tích phân</h1>
+  <p>Định nghĩa · Đổi biến số · Tích phân từng phần · Kẻ cột</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="theory">📚 Lý thuyết</button>
+  <button class="tab-btn" data-tab="practice">✏️ Luyện tập nhanh</button>
+  <button class="tab-btn" data-tab="timed">⏱️ Thi có tính giờ</button>
+</div>
+
+<!-- ===================== LÝ THUYẾT ===================== -->
+<div class="container">
+  <div id="theory" class="panel active">
+    <div class="card">
+      <h3>1. Định nghĩa & Tính chất Tích phân</h3>
+      <div class="formula-box">
+        <b>Định nghĩa:</b> Cho $f(x)$ liên tục trên $[a;b]$, $F(x)$ là một nguyên hàm của $f(x)$.<br>
+        $$ \int_a^b f(x)\,dx = F(b) - F(a) $$
+      </div>
+      <div class="formula-box">
+        <b>Tính chất:</b><br>
+        $\int_a^b f(x)dx = -\int_b^a f(x)dx$ &nbsp;·&nbsp; $\int_a^b k\,f(x)dx = k\int_a^b f(x)dx$<br>
+        $\int_a^b [f \pm g]dx = \int_a^b f\,dx \pm \int_a^b g\,dx$<br>
+        $\int_a^b f\,dx = \int_a^c f\,dx + \int_c^b f\,dx$
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2. Phương pháp Đổi biến số</h3>
+      <div class="formula-box">
+        <b>Dạng 1 (đặt $t = u(x)$):</b>
+        $$ \int_a^b f[u(x)]\,u'(x)\,dx = \int_{u(a)}^{u(b)} f(t)\,dt $$
+        <i>Các bước:</i> Đặt $t=u(x) \Rightarrow dt=u'(x)dx$ → đổi cận $x=a\Rightarrow t=u(a)$, $x=b\Rightarrow t=u(b)$ → thay vào tính.
+      </div>
+      <div class="formula-box">
+        <b>Dạng 2 (đặt $x = u(t)$):</b><br>
+        • $\sqrt{a^2-x^2}$ → đặt $x = a\sin t$<br>
+        • $\sqrt{x^2+a^2}$ → đặt $x = a\tan t$<br>
+        • $\sqrt{x^2-a^2}$ → đặt $x = \dfrac{a}{\cos t}$
+      </div>
+      <div class="formula-box">
+        <b>Dấu hiệu nhận biết:</b> Có hàm và đạo hàm của nó (hoặc sai khác hằng số), hoặc biểu thức chứa căn đặc biệt.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>3. Phương pháp Tích phân từng phần</h3>
+      <div class="formula-box">
+        $$ \int_a^b u\,dv = (u\cdot v)\Big|_a^b - \int_a^b v\,du $$
+        <b>Quy tắc chọn $u$:</b> "Nhất <b>L</b>og, nhì <b>Đ</b>a, tam <b>L</b>ượng, tứ <b>M</b>ũ"<br>
+        Logarit → Đa thức → Lượng giác → Mũ.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>4. Phương pháp "Kẻ cột" (Sơ đồ đường chéo)</h3>
+      <p>Dùng khi phải lặp từng phần nhiều lần, thường gặp ở dạng $\int P(x)\cdot e^{ax+b}dx$, $\int P(x)\sin(ax+b)dx$, $\int P(x)\cos(ax+b)dx$.</p>
+      <div class="formula-box">
+        <b>Cách làm:</b><br>
+        1. Lập bảng 2 cột: <b>Cột trái</b> (u) = đa thức $P(x)$, lấy đạo hàm liên tiếp đến 0. <b>Cột phải</b> (dv) = mũ/lượng giác, lấy nguyên hàm tương ứng.<br>
+        2. Nhân chéo: phần tử cột trái × phần tử dòng dưới cột phải. Dấu đan: +, −, +, −…
+      </div>
+      <div class="formula-box">
+        <b>Ví dụ:</b> $I = \int x^2 e^x dx$
+        <table style="margin-top:8px;border-collapse:collapse;">
+          <tr style="background:#dbeafe;"><th style="padding:6px 12px;border:1px solid #cbd5e1;">Dấu</th><th style="padding:6px 12px;border:1px solid #cbd5e1;">u (đạo hàm)</th><th style="padding:6px 12px;border:1px solid #cbd5e1;">dv (nguyên hàm)</th></tr>
+          <tr><td style="padding:6px 12px;border:1px solid #cbd5e1;">+</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$x^2$</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$e^x$</td></tr>
+          <tr><td style="padding:6px 12px;border:1px solid #cbd5e1;">−</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$2x$</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$e^x$</td></tr>
+          <tr><td style="padding:6px 12px;border:1px solid #cbd5e1;">+</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$2$</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$e^x$</td></tr>
+          <tr><td style="padding:6px 12px;border:1px solid #cbd5e1;">−</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$0$</td><td style="padding:6px 12px;border:1px solid #cbd5e1;">$e^x$</td></tr>
+        </table>
+        <br>$\Rightarrow I = x^2 e^x - 2x e^x + 2 e^x + C = e^x(x^2-2x+2)+C$
+      </div>
+      <div class="formula-box">
+        <b>Lưu ý:</b> Nếu gặp tích phân lặp (ví dụ $\int e^x\sin x\,dx$), khi xuất hiện lại tích phân ban đầu → dừng, chuyển vế giải.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LUYỆN TẬP NHANH ===================== -->
+  <div id="practice" class="panel">
+    <div class="sub-tabs">
+      <button class="sub-btn active" data-pgroup="0">Nhóm 1: Đổi biến</button>
+      <button class="sub-btn" data-pgroup="1">Nhóm 2: Từng phần</button>
+      <button class="sub-btn" data-pgroup="2">Nhóm 3: Kẻ cột</button>
+    </div>
+    <div id="practice-content"></div>
+  </div>
+
+  <!-- ===================== THI TÍNH GIỜ ===================== -->
+  <div id="timed" class="panel">
+    <div class="sub-tabs">
+      <button class="sub-btn active" data-tgroup="0">Nhóm A: Nền tảng</button>
+      <button class="sub-btn" data-tgroup="1">Nhóm B: Tăng cường</button>
+      <button class="sub-btn" data-tgroup="2">Nhóm C: Nâng cao</button>
+    </div>
+    <div id="timed-content"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DỮ LIỆU CÂU HỎI
+   ============================================================ */
+const practiceGroups = [
+{
+  name: "Nhóm 1 · Đổi biến số cơ bản",
+  questions: [
+    {
+      q: "Tích phân $\\int_0^1 (2x+1)^3 dx$ bằng?",
+      options: ["$10$", "$5$", "$15$", "$8$"],
+      correct: 0,
+      solution: "Đặt $t=2x+1 \\Rightarrow dt=2dx$. Đổi cận: $x=0\\Rightarrow t=1$, $x=1\\Rightarrow t=3$.<br>$I=\\frac{1}{2}\\int_1^3 t^3 dt = \\frac{1}{2}\\cdot\\frac{t^4}{4}\\Big|_1^3 = \\frac{1}{8}(81-1)=10$.",
+      hint: "Ôn lại đổi biến dạng 1, chú ý đổi cận và vi phân $dt$."
+    },
+    {
+      q: "Cho $I=\\int_0^{\\pi/2}\\sin x\\cos x\\,dx$. Nếu đặt $t=\\sin x$ thì $I$ bằng?",
+      options: ["$\\int_0^1 t\\,dt$", "$\\int_0^{\\pi/2} t\\,dt$", "$\\int_0^1 t^2 dt$", "$\\int_0^{\\pi/2} t^2 dt$"],
+      correct: 0,
+      solution: "$t=\\sin x \\Rightarrow dt=\\cos x\\,dx$. Đổi cận: $x=0\\Rightarrow t=0$; $x=\\frac{\\pi}{2}\\Rightarrow t=1$. Vậy $I=\\int_0^1 t\\,dt$.",
+      hint: "Khi đổi biến phải đổi cả vi phân và cận."
+    },
+    {
+      q: "Tích phân $\\int_0^1 \\frac{x}{x^2+1}dx$ bằng?",
+      options: ["$\\frac{1}{2}\\ln 2$", "$\\ln 2$", "$2\\ln 2$", "$\\frac{\\ln 2}{4}$"],
+      correct: 0,
+      solution: "Đặt $t=x^2+1 \\Rightarrow dt=2x\\,dx \\Rightarrow x\\,dx=\\frac{1}{2}dt$. Cận: $x=0\\Rightarrow t=1$; $x=1\\Rightarrow t=2$.<br>$I=\\frac{1}{2}\\int_1^2\\frac{dt}{t}=\\frac{1}{2}\\ln 2$.",
+      hint: "Nhận diện dạng $\\int\\frac{u'}{u}dx=\\ln|u|$. Đặt $t$ là mẫu."
+    },
+    {
+      q: "Tích phân $\\int_1^e \\frac{\\ln x}{x}dx$ bằng?",
+      options: ["$\\frac{1}{2}$", "$1$", "$e$", "$\\frac{e^2}{2}$"],
+      correct: 0,
+      solution: "Đặt $t=\\ln x \\Rightarrow dt=\\frac{1}{x}dx$. Cận: $x=1\\Rightarrow t=0$; $x=e\\Rightarrow t=1$.<br>$I=\\int_0^1 t\\,dt=\\frac{1}{2}$.",
+      hint: "Nhận diện $\\frac{1}{x}dx$ là vi phân của $\\ln x$."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\sqrt{3}}\\frac{dx}{1+x^2}$ bằng?",
+      options: ["$\\frac{\\pi}{3}$", "$\\frac{\\pi}{6}$", "$\\frac{\\pi}{2}$", "$\\frac{\\pi}{4}$"],
+      correct: 0,
+      solution: "Đặt $x=\\tan t \\Rightarrow dx=(1+\\tan^2 t)dt$. Cận: $x=0\\Rightarrow t=0$; $x=\\sqrt{3}\\Rightarrow t=\\frac{\\pi}{3}$.<br>$I=\\int_0^{\\pi/3}dt=\\frac{\\pi}{3}$.",
+      hint: "Dạng $\\frac{1}{1+x^2}$ → đặt $x=\\tan t$."
+    },
+    {
+      q: "Tích phân $\\int_0^1 x\\sqrt{x^2+1}\\,dx$ bằng?",
+      options: ["$\\frac{2\\sqrt{2}-1}{3}$", "$\\frac{2\\sqrt{2}+1}{3}$", "$\\frac{\\sqrt{2}-1}{3}$", "$\\frac{2\\sqrt{2}}{3}$"],
+      correct: 0,
+      solution: "Đặt $t=x^2+1 \\Rightarrow dt=2x\\,dx$. Cận: $x=0\\Rightarrow t=1$; $x=1\\Rightarrow t=2$.<br>$I=\\frac{1}{2}\\int_1^2 t^{1/2}dt=\\frac{1}{2}\\cdot\\frac{2}{3}t^{3/2}\\Big|_1^2=\\frac{1}{3}(2\\sqrt{2}-1)$.",
+      hint: "Đặt $t$ bằng biểu thức dưới căn."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi/4}\\tan x\\,dx$ bằng?",
+      options: ["$\\frac{1}{2}\\ln 2$", "$\\ln 2$", "$1$", "$\\frac{\\pi}{4}$"],
+      correct: 0,
+      solution: "$\\int\\tan x\\,dx=-\\ln|\\cos x|$. Do đó $I=[-\\ln|\\cos x|]_0^{\\pi/4}=-\\ln\\frac{\\sqrt{2}}{2}=\\ln\\sqrt{2}=\\frac{1}{2}\\ln 2$.",
+      hint: "Nhớ nguyên hàm $\\int\\tan x\\,dx=-\\ln|\\cos x|+C$."
+    },
+    {
+      q: "Tích phân $\\int_0^1 x\\,e^{x^2}dx$ bằng?",
+      options: ["$\\frac{e-1}{2}$", "$e-1$", "$\\frac{e+1}{2}$", "$\\frac{e}{2}$"],
+      correct: 0,
+      solution: "Đặt $t=x^2 \\Rightarrow dt=2x\\,dx$. Cận: $x=0\\Rightarrow t=0$; $x=1\\Rightarrow t=1$.<br>$I=\\frac{1}{2}\\int_0^1 e^t dt=\\frac{e-1}{2}$.",
+      hint: "Nhận diện $x\\,dx$ là vi phân của $x^2/2$."
+    },
+    {
+      q: "Tích phân $\\int_1^2 \\frac{dx}{2x-1}$ bằng?",
+      options: ["$\\frac{1}{2}\\ln 3$", "$\\ln 3$", "$\\frac{1}{2}\\ln 2$", "$2\\ln 3$"],
+      correct: 0,
+      solution: "Đặt $t=2x-1 \\Rightarrow dt=2dx$. Cận: $x=1\\Rightarrow t=1$; $x=2\\Rightarrow t=3$.<br>$I=\\frac{1}{2}\\int_1^3\\frac{dt}{t}=\\frac{1}{2}\\ln 3$.",
+      hint: "Đặt $t$ = mẫu số, chú ý hệ số $dt$."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi/2}\\sin^3 x\\,dx$ bằng?",
+      options: ["$\\frac{2}{3}$", "$\\frac{1}{3}$", "$1$", "$\\frac{4}{3}$"],
+      correct: 0,
+      solution: "$\\sin^3 x=\\sin x(1-\\cos^2 x)$. Đặt $t=\\cos x$, $dt=-\\sin x\\,dx$. Cận: $x=0\\Rightarrow t=1$; $x=\\frac{\\pi}{2}\\Rightarrow t=0$.<br>$I=\\int_0^1(1-t^2)dt=\\left[t-\\frac{t^3}{3}\\right]_0^1=\\frac{2}{3}$.",
+      hint: "Tách $\\sin^3 x=\\sin x(1-\\cos^2 x)$ rồi đặt $t=\\cos x$."
+    }
+  ]
+},
+{
+  name: "Nhóm 2 · Tích phân từng phần cơ bản",
+  questions: [
+    {
+      q: "Tích phân $\\int_0^1 x e^x dx$ bằng?",
+      options: ["$1$", "$e$", "$e-1$", "$e+1$"],
+      correct: 0,
+      solution: "Đặt $u=x$, $dv=e^x dx$ → $du=dx$, $v=e^x$.<br>$I=xe^x\\big|_0^1-\\int_0^1 e^x dx = e-(e-1)=1$.",
+      hint: "Quy tắc: với $x\\cdot e^x$, chọn $u=x$ (đa thức), $dv=e^x dx$."
+    },
+    {
+      q: "Tích phân $\\int_1^2 x\\ln x\\,dx$ bằng?",
+      options: ["$2\\ln 2-\\frac{3}{4}$", "$2\\ln 2+\\frac{3}{4}$", "$\\ln 2-\\frac{3}{4}$", "$2\\ln 2-1$"],
+      correct: 0,
+      solution: "Đặt $u=\\ln x$, $dv=x\\,dx$ → $du=\\frac{1}{x}dx$, $v=\\frac{x^2}{2}$.<br>$I=\\frac{x^2}{2}\\ln x\\Big|_1^2-\\int_1^2\\frac{x}{2}dx=2\\ln 2-\\frac{3}{4}$.",
+      hint: "Quy tắc: logarit ưu tiên làm $u$."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi/2} x\\cos x\\,dx$ bằng?",
+      options: ["$\\frac{\\pi}{2}-1$", "$1$", "$\\frac{\\pi}{2}+1$", "$0$"],
+      correct: 0,
+      solution: "Đặt $u=x$, $dv=\\cos x\\,dx$ → $du=dx$, $v=\\sin x$.<br>$I=x\\sin x\\big|_0^{\\pi/2}-\\int_0^{\\pi/2}\\sin x\\,dx=\\frac{\\pi}{2}-1$.",
+      hint: "Đa thức làm $u$, lượng giác làm $dv$."
+    },
+    {
+      q: "Tích phân $\\int_0^1 (x+1)e^x dx$ bằng?",
+      options: ["$e$", "$1$", "$e-1$", "$e+1$"],
+      correct: 0,
+      solution: "Đặt $u=x+1$, $dv=e^x dx$ → $du=dx$, $v=e^x$.<br>$I=(x+1)e^x\\big|_0^1-\\int_0^1 e^x dx=(2e-1)-(e-1)=e$.",
+      hint: "Chọn $u$ là đa thức, $dv=e^x dx$."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi/4} x\\sin 2x\\,dx$ bằng?",
+      options: ["$\\frac{1}{4}$", "$\\frac{\\pi}{8}-\\frac{1}{4}$", "$\\frac{\\pi}{4}$", "$\\frac{\\pi}{8}+\\frac{1}{4}$"],
+      correct: 0,
+      solution: "Đặt $u=x$, $dv=\\sin 2x\\,dx$ → $du=dx$, $v=-\\frac{1}{2}\\cos 2x$.<br>$I=-\\frac{x}{2}\\cos 2x\\Big|_0^{\\pi/4}+\\frac{1}{2}\\int_0^{\\pi/4}\\cos 2x\\,dx=0+\\frac{1}{4}\\sin 2x\\Big|_0^{\\pi/4}=\\frac{1}{4}$.",
+      hint: "Chú ý hệ số $\\frac{1}{2}$ khi lấy nguyên hàm $\\sin 2x$."
+    },
+    {
+      q: "Tích phân $\\int_1^e \\ln x\\,dx$ bằng?",
+      options: ["$1$", "$e$", "$e-1$", "$e+1$"],
+      correct: 0,
+      solution: "Đặt $u=\\ln x$, $dv=dx$ → $du=\\frac{dx}{x}$, $v=x$.<br>$I=x\\ln x\\big|_1^e-\\int_1^e dx=e-(e-1)=1$.",
+      hint: "Với $\\ln x$, chọn $u=\\ln x$, $dv=dx$."
+    },
+    {
+      q: "Tích phân $\\int_0^1 x e^{-x}dx$ bằng?",
+      options: ["$1-\\frac{2}{e}$", "$\\frac{2}{e}-1$", "$1+\\frac{2}{e}$", "$\\frac{1}{e}$"],
+      correct: 0,
+      solution: "Đặt $u=x$, $dv=e^{-x}dx$ → $du=dx$, $v=-e^{-x}$.<br>$I=-xe^{-x}\\big|_0^1+\\int_0^1 e^{-x}dx=-\\frac{1}{e}+\\left[-e^{-x}\\right]_0^1=-\\frac{1}{e}-\\frac{1}{e}+1=1-\\frac{2}{e}$.",
+      hint: "Chú ý dấu khi $v=-e^{-x}$."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi/2} x\\sin x\\,dx$ bằng?",
+      options: ["$1$", "$\\frac{\\pi}{2}$", "$\\frac{\\pi}{2}-1$", "$0$"],
+      correct: 0,
+      solution: "Đặt $u=x$, $dv=\\sin x\\,dx$ → $du=dx$, $v=-\\cos x$.<br>$I=-x\\cos x\\big|_0^{\\pi/2}+\\int_0^{\\pi/2}\\cos x\\,dx=0+1=1$.",
+      hint: "Tương tự câu $x\\cos x$, chỉ khác hàm lượng giác."
+    },
+    {
+      q: "Tích phân $\\int_1^e x^2\\ln x\\,dx$ bằng?",
+      options: ["$\\frac{2e^3+1}{9}$", "$\\frac{2e^3-1}{9}$", "$\\frac{e^3+1}{9}$", "$\\frac{e^3-1}{9}$"],
+      correct: 0,
+      solution: "Đặt $u=\\ln x$, $dv=x^2 dx$ → $du=\\frac{dx}{x}$, $v=\\frac{x^3}{3}$.<br>$I=\\frac{x^3}{3}\\ln x\\Big|_1^e-\\frac{1}{3}\\int_1^e x^2 dx=\\frac{e^3}{3}-\\frac{e^3-1}{9}=\\frac{2e^3+1}{9}$.",
+      hint: "Logarit làm $u$, đa thức làm $dv$."
+    },
+    {
+      q: "Tích phân $\\int_0^1 x\\arctan x\\,dx$ bằng?",
+      options: ["$\\frac{\\pi}{4}-\\frac{1}{2}$", "$\\frac{\\pi}{4}$", "$\\frac{\\pi}{4}+\\frac{1}{2}$", "$\\frac{\\pi}{2}-\\frac{1}{2}$"],
+      correct: 0,
+      solution: "Đặt $u=\\arctan x$, $dv=x\\,dx$ → $du=\\frac{dx}{1+x^2}$, $v=\\frac{x^2}{2}$.<br>$I=\\frac{x^2}{2}\\arctan x\\Big|_0^1-\\frac{1}{2}\\int_0^1\\frac{x^2}{1+x^2}dx=\\frac{\\pi}{8}-\\frac{1}{2}\\int_0^1\\left(1-\\frac{1}{1+x^2}\\right)dx=\\frac{\\pi}{4}-\\frac{1}{2}$.",
+      hint: "Dùng $\\frac{x^2}{1+x^2}=1-\\frac{1}{1+x^2}$ để tách tích phân."
+    }
+  ]
+},
+{
+  name: "Nhóm 3 · Kẻ cột & Tính nhanh",
+  questions: [
+    {
+      q: "Dùng kẻ cột, $\\int x e^{2x}dx$ có kết quả:",
+      options: ["$\\frac{1}{2}xe^{2x}-\\frac{1}{4}e^{2x}+C$", "$\\frac{1}{2}xe^{2x}+\\frac{1}{4}e^{2x}+C$", "$xe^{2x}-e^{2x}+C$", "$\\frac{1}{2}xe^{2x}-\\frac{1}{2}e^{2x}+C$"],
+      correct: 0,
+      solution: "Bảng: $u: x \\to 1 \\to 0$; $dv: e^{2x} \\to \\frac{1}{2}e^{2x} \\to \\frac{1}{4}e^{2x}$.<br>Kết quả: $x\\cdot\\frac{1}{2}e^{2x}-1\\cdot\\frac{1}{4}e^{2x}+C$.",
+      hint: "Xem lại quy tắc lập bảng 2 cột và nhân chéo đan dấu."
+    },
+    {
+      q: "Kết quả $\\int x^2\\sin x\\,dx$ theo kẻ cột:",
+      options: ["$-x^2\\cos x+2x\\sin x+2\\cos x+C$", "$x^2\\cos x-2x\\sin x+2\\cos x+C$", "$-x^2\\cos x-2x\\sin x-2\\cos x+C$", "$x^2\\sin x+2x\\cos x-2\\sin x+C$"],
+      correct: 0,
+      solution: "Bảng: $u: x^2\\to 2x\\to 2\\to 0$; $dv: \\sin x\\to -\\cos x\\to -\\sin x\\to \\cos x$.<br>Kết quả: $-x^2\\cos x+2x\\sin x+2\\cos x+C$.",
+      hint: "Chú ý dấu đan xen khi $dv$ là lượng giác."
+    },
+    {
+      q: "Tích phân $\\int_0^1 x^2 e^x dx$ bằng?",
+      options: ["$e-2$", "$e-1$", "$2e-1$", "$e$"],
+      correct: 0,
+      solution: "Nguyên hàm: $F(x)=e^x(x^2-2x+2)$. Thay cận: $F(1)-F(0)=e(1-2+2)-(2)=e-2$.",
+      hint: "Tìm nguyên hàm bằng kẻ cột rồi thế cận."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi}x^2\\cos x\\,dx$ bằng?",
+      options: ["$-2\\pi$", "$2\\pi$", "$0$", "$-\\pi$"],
+      correct: 0,
+      solution: "Nguyên hàm $F(x)=x^2\\sin x+2x\\cos x-2\\sin x$.<br>$F(\\pi)=2\\pi(-1)=-2\\pi$; $F(0)=0$. Vậy $I=-2\\pi$.",
+      hint: "Kẻ cột với $x^2$ đạo hàm 3 lần mới về 0."
+    },
+    {
+      q: "Nếu $\\int e^x\\cos x\\,dx=e^x(A\\cos x+B\\sin x)+C$ thì $A+B=?$",
+      options: ["$1$", "$0$", "$2$", "$\\frac{1}{2}$"],
+      correct: 0,
+      solution: "Dùng kẻ cột cho tích phân lặp (dừng khi lặp lại) → $A=B=\\frac{1}{2}$. Vậy $A+B=1$.",
+      hint: "Với tích phân lặp $e^x\\cos x$, dùng kẻ cột rồi chuyển vế."
+    },
+    {
+      q: "Nguyên hàm $\\int x^3 e^x dx$ bằng?",
+      options: ["$e^x(x^3-3x^2+6x-6)+C$", "$e^x(x^3+3x^2+6x+6)+C$", "$e^x(x^3-3x^2+6x+6)+C$", "$e^x(x^3+3x^2-6x-6)+C$"],
+      correct: 0,
+      solution: "Kẻ cột: $u: x^3\\to 3x^2\\to 6x\\to 6\\to 0$; $dv: e^x$ (4 lần).<br>Kết quả: $e^x(x^3-3x^2+6x-6)+C$.",
+      hint: "Nhớ dấu đan khi đạo hàm bậc 3."
+    },
+    {
+      q: "Tích phân $\\int_0^1 x^3 e^x dx$ bằng?",
+      options: ["$6-2e$", "$2e-6$", "$6+2e$", "$e-6$"],
+      correct: 0,
+      solution: "$F(x)=e^x(x^3-3x^2+6x-6)$. $F(1)=e(1-3+6-6)=-2e$; $F(0)=-6$.<br>$I=-2e-(-6)=6-2e$.",
+      hint: "Dùng nguyên hàm từ câu trên, thay cận."
+    },
+    {
+      q: "Nguyên hàm $\\int x^2 e^{2x}dx$ bằng?",
+      options: ["$e^{2x}\\left(\\frac{x^2}{2}-\\frac{x}{2}+\\frac{1}{4}\\right)+C$", "$e^{2x}\\left(\\frac{x^2}{2}+\\frac{x}{2}+\\frac{1}{4}\\right)+C$", "$e^{2x}\\left(x^2-x+\\frac{1}{4}\\right)+C$", "$e^{2x}\\left(\\frac{x^2}{2}-\\frac{x}{2}-\\frac{1}{4}\\right)+C$"],
+      correct: 0,
+      solution: "Kẻ cột: $u: x^2\\to 2x\\to 2\\to 0$; $dv: e^{2x}\\to\\frac{1}{2}e^{2x}\\to\\frac{1}{4}e^{2x}\\to\\frac{1}{8}e^{2x}$.<br>Kết quả: $e^{2x}\\left(\\frac{x^2}{2}-\\frac{x}{2}+\\frac{1}{4}\\right)+C$.",
+      hint: "Chú ý hệ số $\\frac{1}{2^n}$ khi lấy nguyên hàm $e^{2x}$."
+    },
+    {
+      q: "Nguyên hàm $\\int e^{2x}\\sin x\\,dx$ bằng?",
+      options: ["$\\frac{e^{2x}(2\\sin x-\\cos x)}{5}+C$", "$\\frac{e^{2x}(2\\sin x+\\cos x)}{5}+C$", "$\\frac{e^{2x}(\\sin x-2\\cos x)}{5}+C$", "$\\frac{e^{2x}(\\sin x+2\\cos x)}{5}+C$"],
+      correct: 0,
+      solution: "Công thức tích phân lặp: $\\int e^{ax}\\sin(bx)dx=\\frac{e^{ax}(a\\sin bx-b\\cos bx)}{a^2+b^2}+C$ với $a=2,b=1$.<br>Kết quả: $\\frac{e^{2x}(2\\sin x-\\cos x)}{5}+C$.",
+      hint: "Dùng công thức tích phân lặp $e^{ax}\\sin(bx)$."
+    },
+    {
+      q: "Tích phân $\\int_0^{\\pi/2} x^2\\sin x\\,dx$ bằng?",
+      options: ["$\\pi-2$", "$\\pi+2$", "$\\pi$", "$2-\\pi$"],
+      correct: 0,
+      solution: "$F(x)=-x^2\\cos x+2x\\sin x+2\\cos x$.<br>$F(\\pi/2)=0+2\\cdot\\frac{\\pi}{2}\\cdot 1+0=\\pi$; $F(0)=2$.<br>$I=\\pi-2$.",
+      hint: "Kẻ cột với $x^2$ và $\\sin x$, thay cận cẩn thận."
+    }
+  ]
+}
+];
+
+const timedGroups = [
+{
+  name: "Nhóm A · Nền tảng và cơ bản",
+  duration: 40,
+  questions: [
+    {q:"$\\int_0^1(3x^2+2x)dx$ bằng?",options:["$2$","$3$","$1$","$4$"],correct:0,solution:"$[x^3+x^2]_0^1=2$."},
+    {q:"$\\int_1^2 2\\,dx$ bằng?",options:["$2$","$1$","$3$","$4$"],correct:0,solution:"$2(2-1)=2$."},
+    {q:"$\\int_0^{\\pi}\\sin x\\,dx$ bằng?",options:["$2$","$1$","$0$","$-2$"],correct:0,solution:"$[-\\cos x]_0^{\\pi}=1+1=2$."},
+    {q:"$\\int_0^1 e^x dx$ bằng?",options:["$e-1$","$e$","$1$","$e+1$"],correct:0,solution:"$[e^x]_0^1=e-1$."},
+    {q:"$\\int_1^e \\frac{dx}{x}$ bằng?",options:["$1$","$e$","$\\ln 2$","$2$"],correct:0,solution:"$[\\ln x]_1^e=1$."},
+    {q:"$\\int_0^{\\pi/2}\\cos x\\,dx$ bằng?",options:["$1$","$0$","$2$","$-1$"],correct:0,solution:"$[\\sin x]_0^{\\pi/2}=1$."},
+    {q:"Cho $\\int_0^2 f=5$. Tính $\\int_0^2[2f(x)-1]dx$.",options:["$8$","$9$","$10$","$11$"],correct:0,solution:"$2\\cdot 5-2=8$."},
+    {q:"$\\int_0^1(x^3+x)dx$ bằng?",options:["$\\frac{3}{4}$","$\\frac{1}{2}$","$1$","$\\frac{1}{4}$"],correct:0,solution:"$\\frac{1}{4}+\\frac{1}{2}=\\frac{3}{4}$."},
+    {q:"$\\int_0^1 2x\\sqrt{x^2+1}\\,dx$ bằng?",options:["$\\frac{2(2\\sqrt{2}-1)}{3}$","$\\frac{2\\sqrt{2}-1}{3}$","$\\frac{\\sqrt{2}-1}{3}$","$\\frac{2\\sqrt{2}}{3}$"],correct:0,solution:"Đặt $t=x^2+1$, $I=\\int_1^2\\sqrt t\\,dt=\\frac{2}{3}(2\\sqrt2-1)$."},
+    {q:"$\\int_0^{\\pi/2}\\sin^2 x\\,dx$ bằng?",options:["$\\frac{\\pi}{4}$","$\\frac{\\pi}{2}$","$\\pi$","$\\frac{\\pi}{8}$"],correct:0,solution:"$\\int\\sin^2 x\\,dx=\\frac{x}{2}-\\frac{\\sin 2x}{4}$, thay cận = $\\frac{\\pi}{4}$."},
+    {q:"$\\int_1^e\\ln x\\,dx$ bằng?",options:["$1$","$e-1$","$e$","$e+1$"],correct:0,solution:"Từng phần: $x\\ln x-x$, thay cận = $1$."},
+    {q:"$\\int_0^1 xe^x dx$ bằng?",options:["$1$","$e$","$e-1$","$2$"],correct:0,solution:"Từng phần: $xe^x-e^x$, thay cận = $1$."},
+    {q:"$\\int_0^1\\frac{x}{x^2+1}dx$ bằng?",options:["$\\frac{1}{2}\\ln 2$","$\\ln 2$","$\\ln 3$","$1$"],correct:0,solution:"$t=x^2+1$: $\\frac{1}{2}\\ln 2$."},
+    {q:"$\\int_0^{\\pi/4}\\tan x\\,dx$ bằng?",options:["$\\frac{1}{2}\\ln 2$","$\\ln 2$","$1$","$\\frac{\\pi}{4}$"],correct:0,solution:"$-\\ln(\\cos x)$: $\\ln\\sqrt 2=\\frac{1}{2}\\ln 2$."},
+    {q:"$\\int_0^1 x^2e^x dx$ bằng?",options:["$e-2$","$e-1$","$2e-1$","$e$"],correct:0,solution:"Kẻ cột: $e^x(x^2-2x+2)$, thay cận = $e-2$."},
+    {q:"$\\int_0^{\\pi/2}x\\sin x\\,dx$ bằng?",options:["$1$","$\\frac{\\pi}{2}$","$\\frac{\\pi}{2}-1$","$0$"],correct:0,solution:"$-x\\cos x+\\sin x$, thay cận = $1$."},
+    {q:"$\\int_0^{\\pi}x^2\\sin x\\,dx$ bằng?",options:["$\\pi^2-4$","$\\pi^2$","$\\pi^2+4$","$4-\\pi^2$"],correct:0,solution:"$F=-x^2\\cos x+2x\\sin x+2\\cos x$: $F(\\pi)-F(0)=\\pi^2-4$."},
+    {q:"$\\int_1^2 x\\ln x\\,dx$ bằng?",options:["$2\\ln 2-\\frac{3}{4}$","$2\\ln 2+\\frac{3}{4}$","$\\ln 2-\\frac{3}{4}$","$2\\ln 2-1$"],correct:0,solution:"Từng phần: $2\\ln 2-\\frac{3}{4}$."},
+    {q:"$\\int_0^{\\pi/2}\\sin^3 x\\,dx$ bằng?",options:["$\\frac{2}{3}$","$\\frac{1}{3}$","$1$","$\\frac{4}{3}$"],correct:0,solution:"$\\sin^3x=\\sin x(1-\\cos^2 x)$, $t=\\cos x$: $\\frac{2}{3}$."},
+    {q:"$\\int_0^1 x^3e^x dx$ bằng?",options:["$6-2e$","$2e-6$","$6+2e$","$e-6$"],correct:0,solution:"Kẻ cột: $e^x(x^3-3x^2+6x-6)$, thay cận = $6-2e$."},
+    {q:"$\\int_0^{\\pi/2}e^x\\sin x\\,dx$ bằng?",options:["$\\frac{e^{\\pi/2}+1}{2}$","$\\frac{e^{\\pi/2}-1}{2}$","$e^{\\pi/2}$","$e^{\\pi/2}+1$"],correct:0,solution:"$\\frac{e^x(\\sin x-\\cos x)}{2}$, thay cận = $\\frac{e^{\\pi/2}+1}{2}$."},
+    {q:"Cho $\\int_0^1 f=2$. Tính $\\int_0^{\\pi/2}f(\\sin x)\\cos x\\,dx$.",options:["$2$","$1$","$4$","$0$"],correct:0,solution:"$t=\\sin x$, đưa về $\\int_0^1 f(t)dt=2$."}
+  ]
+},
+{
+  name: "Nhóm B · Tăng cường đổi biến & từng phần",
+  duration: 45,
+  questions: [
+    {q:"$\\int_0^1 x\\sqrt{x^2+1}\\,dx$ bằng?",options:["$\\frac{2\\sqrt 2-1}{3}$","$\\frac{2(2\\sqrt 2-1)}{3}$","$\\frac{\\sqrt 2-1}{3}$","$\\frac{2\\sqrt 2}{3}$"],correct:0,solution:"$t=x^2+1$: $\\frac{1}{3}(2\\sqrt 2-1)$."},
+    {q:"$\\int_1^2\\frac{\\ln x}{x}dx$ bằng?",options:["$\\frac{(\\ln 2)^2}{2}$","$(\\ln 2)^2$","$\\frac{\\ln 2}{2}$","$\\ln 2$"],correct:0,solution:"$t=\\ln x$: $\\int_0^{\\ln 2}t\\,dt=\\frac{(\\ln 2)^2}{2}$."},
+    {q:"$\\int_0^1 xe^{x^2}dx$ bằng?",options:["$\\frac{e-1}{2}$","$e-1$","$\\frac{e+1}{2}$","$\\frac{e}{2}$"],correct:0,solution:"$t=x^2$: $\\frac{1}{2}\\int_0^1 e^t dt=\\frac{e-1}{2}$."},
+    {q:"$\\int_0^{\\pi/2}\\sin x\\cos^2 x\\,dx$ bằng?",options:["$\\frac{1}{3}$","$\\frac{2}{3}$","$\\frac{1}{2}$","$1$"],correct:0,solution:"$t=\\cos x$: $\\int_0^1 t^2 dt=\\frac{1}{3}$."},
+    {q:"$\\int_0^1\\frac{dx}{x^2+1}$ bằng?",options:["$\\frac{\\pi}{4}$","$\\frac{\\pi}{2}$","$\\pi$","$1$"],correct:0,solution:"$[\\arctan x]_0^1=\\frac{\\pi}{4}$."},
+    {q:"$\\int_1^e\\frac{(\\ln x)^2}{x}dx$ bằng?",options:["$\\frac{1}{3}$","$\\frac{1}{2}$","$1$","$\\frac{e}{3}$"],correct:0,solution:"$t=\\ln x$: $\\int_0^1 t^2 dt=\\frac{1}{3}$."},
+    {q:"$\\int_0^1 xe^{2x}dx$ bằng?",options:["$\\frac{e^2+1}{4}$","$\\frac{e^2-1}{4}$","$\\frac{e^2}{4}$","$\\frac{e^2-1}{2}$"],correct:0,solution:"Từng phần: $\\frac{e^2}{2}-\\frac{e^2-1}{4}=\\frac{e^2+1}{4}$."},
+    {q:"$\\int_0^{\\pi/4}x\\cos 2x\\,dx$ bằng?",options:["$\\frac{\\pi-2}{8}$","$\\frac{\\pi+2}{8}$","$\\frac{\\pi}{8}$","$\\frac{\\pi-1}{4}$"],correct:0,solution:"Từng phần: $\\frac{\\pi}{8}-\\frac{1}{4}=\\frac{\\pi-2}{8}$."},
+    {q:"$\\int_1^e x\\ln x\\,dx$ bằng?",options:["$\\frac{e^2+1}{4}$","$\\frac{2e^2-1}{4}$","$\\frac{e^2-1}{4}$","$\\frac{e^2+1}{2}$"],correct:0,solution:"Từng phần: $\\frac{e^2}{2}-\\frac{e^2-1}{4}=\\frac{e^2+1}{4}$."},
+    {q:"$\\int_0^1 x\\arctan x\\,dx$ bằng?",options:["$\\frac{\\pi}{4}-\\frac{1}{2}$","$\\frac{\\pi}{4}$","$\\frac{\\pi}{4}+\\frac{1}{2}$","$\\frac{\\pi}{2}-\\frac{1}{2}$"],correct:0,solution:"Từng phần: $\\frac{\\pi}{4}-\\frac{1}{2}$."},
+    {q:"$\\int_0^{\\pi/2}(x+1)\\cos x\\,dx$ bằng?",options:["$\\frac{\\pi}{2}$","$\\frac{\\pi}{2}+1$","$\\frac{\\pi}{2}-1$","$1-\\frac{\\pi}{2}$"],correct:0,solution:"Từng phần: $\\frac{\\pi}{2}-1+1=\\frac{\\pi}{2}$."},
+    {q:"$\\int_0^1 x^2e^{2x}dx$ bằng?",options:["$\\frac{e^2-1}{4}$","$\\frac{e^2+1}{4}$","$\\frac{e^2-2}{4}$","$\\frac{e^2+2}{4}$"],correct:0,solution:"Kẻ cột: $e^{2x}(\\frac{x^2}{2}-\\frac{x}{2}+\\frac{1}{4})$, thay cận = $\\frac{e^2-1}{4}$."},
+    {q:"$\\int_0^{\\pi/2}e^x\\cos x\\,dx$ bằng?",options:["$\\frac{e^{\\pi/2}-1}{2}$","$\\frac{e^{\\pi/2}+1}{2}$","$\\frac{e^{\\pi/2}}{2}$","$\\frac{e^{\\pi/2}-2}{2}$"],correct:0,solution:"$\\frac{e^x(\\sin x+\\cos x)}{2}$, thay cận = $\\frac{e^{\\pi/2}-1}{2}$."},
+    {q:"Cho $\\int_0^1 f=3$. Tính $\\int_0^{\\pi/2}f(\\cos x)\\sin x\\,dx$.",options:["$3$","$-3$","$1$","$0$"],correct:0,solution:"$t=\\cos x$, $dt=-\\sin x\\,dx$: $-\\int_1^0 f(t)dt=\\int_0^1 f=3$."},
+    {q:"$\\int_0^{\\pi/4}(1+\\tan^2 x)dx$ bằng?",options:["$1$","$\\frac{\\pi}{4}$","$\\frac{\\pi}{2}$","$2$"],correct:0,solution:"$\\int\\sec^2 x\\,dx=[\\tan x]_0^{\\pi/4}=1$."},
+    {q:"$\\int_0^{\\pi}x\\sin\\frac{x}{2}dx$ bằng?",options:["$4$","$\\pi$","$2\\pi$","$2$"],correct:0,solution:"Từng phần: $[-2x\\cos\\frac{x}{2}]_0^{\\pi}+4[\\sin\\frac{x}{2}]_0^{\\pi}=0+4=4$."},
+    {q:"$\\int_0^1\\ln(x+1)dx$ bằng?",options:["$2\\ln 2-1$","$2\\ln 2$","$\\ln 2-1$","$\\ln 2+1$"],correct:0,solution:"Từng phần: $[x\\ln(x+1)-x+\\ln(x+1)]_0^1=2\\ln 2-1$."},
+    {q:"$\\int_0^{\\pi/2}x^2\\cos x\\,dx$ bằng?",options:["$\\frac{\\pi^2}{4}-2$","$\\frac{\\pi^2}{4}+2$","$\\frac{\\pi^2}{4}$","$\\frac{\\pi^2}{2}-2$"],correct:0,solution:"Kẻ cột: $x^2\\sin x+2x\\cos x-2\\sin x$, thay cận = $\\frac{\\pi^2}{4}-2$."},
+    {q:"$\\int_1^e x^2\\ln x\\,dx$ bằng?",options:["$\\frac{2e^3+1}{9}$","$\\frac{2e^3-1}{9}$","$\\frac{e^3+1}{9}$","$\\frac{e^3-1}{9}$"],correct:0,solution:"Từng phần: $\\frac{2e^3+1}{9}$."},
+    {q:"$\\int_0^1(x^2+x+1)e^x dx$ bằng?",options:["$2e-2$","$2e$","$e-2$","$2e+2$"],correct:0,solution:"Kẻ cột: $e^x(x^2-x+2)$, thay cận = $2e-2$."},
+    {q:"$\\int_0^{\\pi/2}e^{2x}\\sin x\\,dx$ bằng?",options:["$\\frac{2e^{\\pi}+1}{5}$","$\\frac{2e^{\\pi}-1}{5}$","$\\frac{e^{\\pi}+2}{5}$","$\\frac{e^{\\pi}-2}{5}$"],correct:0,solution:"$\\frac{e^{2x}(2\\sin x-\\cos x)}{5}$, thay cận = $\\frac{2e^{\\pi}+1}{5}$."},
+    {q:"Cho $F$ là nguyên hàm của $f(x)=x\\ln(x+1)$ với $F(0)=0$. Tính $F(1)$.",options:["$\\frac{1}{4}$","$\\frac{1}{2}$","$1$","$0$"],correct:0,solution:"Từng phần: $F(x)=\\frac{x^2}{2}\\ln(x+1)-\\frac{x^2}{4}+\\frac{x}{2}-\\frac{1}{2}\\ln(x+1)$; $F(1)=\\frac{1}{4}$."}
+  ]
+},
+{
+  name: "Nhóm C · Nâng cao & Kẻ cột",
+  duration: 50,
+  questions: [
+    {q:"$\\int xe^{3x}dx$ bằng?",options:["$e^{3x}(\\frac{x}{3}-\\frac{1}{9})+C$","$e^{3x}(\\frac{x}{3}+\\frac{1}{9})+C$","$e^{3x}(3x-1)+C$","$e^{3x}(x-3)+C$"],correct:0,solution:"Kẻ cột: $x\\cdot\\frac{e^{3x}}{3}-1\\cdot\\frac{e^{3x}}{9}+C$."},
+    {q:"$\\int x^2\\cos x\\,dx$ bằng?",options:["$x^2\\sin x+2x\\cos x-2\\sin x+C$","$x^2\\sin x-2x\\cos x+2\\sin x+C$","$-x^2\\sin x+2x\\cos x-2\\sin x+C$","$x^2\\sin x+2x\\cos x+2\\sin x+C$"],correct:0,solution:"Kẻ cột: $x^2\\sin x+2x\\cos x-2\\sin x+C$."},
+    {q:"$\\int_0^1 x^2e^x dx$ bằng?",options:["$e-2$","$e-1$","$2e-1$","$e$"],correct:0,solution:"$e^x(x^2-2x+2)$, thay cận = $e-2$."},
+    {q:"$\\int_0^{\\pi}x^2\\cos x\\,dx$ bằng?",options:["$-2\\pi$","$2\\pi$","$0$","$-\\pi$"],correct:0,solution:"$x^2\\sin x+2x\\cos x-2\\sin x$, thay cận = $-2\\pi$."},
+    {q:"$\\int e^x\\cos x\\,dx$ bằng?",options:["$\\frac{e^x(\\cos x+\\sin x)}{2}+C$","$\\frac{e^x(\\cos x-\\sin x)}{2}+C$","$\\frac{e^x(\\sin x-\\cos x)}{2}+C$","$e^x(\\sin x+\\cos x)+C$"],correct:0,solution:"Tích phân lặp: $\\frac{e^x(\\sin x+\\cos x)}{2}+C$."},
+    {q:"$\\int x^3e^x dx$ bằng?",options:["$e^x(x^3-3x^2+6x-6)+C$","$e^x(x^3+3x^2+6x+6)+C$","$e^x(x^3-3x^2+6x+6)+C$","$e^x(x^3+3x^2-6x-6)+C$"],correct:0,solution:"Kẻ cột: $e^x(x^3-3x^2+6x-6)+C$."},
+    {q:"$\\int_0^1 x^3e^x dx$ bằng?",options:["$6-2e$","$2e-6$","$6+2e$","$e-6$"],correct:0,solution:"$e^x(x^3-3x^2+6x-6)$, thay cận = $6-2e$."},
+    {q:"$\\int x^2e^{2x}dx$ bằng?",options:["$e^{2x}(\\frac{x^2}{2}-\\frac{x}{2}+\\frac{1}{4})+C$","$e^{2x}(\\frac{x^2}{2}+\\frac{x}{2}+\\frac{1}{4})+C$","$e^{2x}(x^2-x+\\frac{1}{4})+C$","$e^{2x}(\\frac{x^2}{2}-\\frac{x}{2}-\\frac{1}{4})+C$"],correct:0,solution:"Kẻ cột: $e^{2x}(\\frac{x^2}{2}-\\frac{x}{2}+\\frac{1}{4})+C$."},
+    {q:"$\\int e^{2x}\\sin x\\,dx$ bằng?",options:["$\\frac{e^{2x}(2\\sin x-\\cos x)}{5}+C$","$\\frac{e^{2x}(2\\sin x+\\cos x)}{5}+C$","$\\frac{e^{2x}(\\sin x-2\\cos x)}{5}+C$","$\\frac{e^{2x}(\\sin x+2\\cos x)}{5}+C$"],correct:0,solution:"Công thức: $\\frac{e^{2x}(2\\sin x-\\cos x)}{5}+C$."},
+    {q:"$\\int_0^{\\pi/2}x^2\\sin x\\,dx$ bằng?",options:["$\\pi-2$","$\\pi+2$","$\\pi$","$2-\\pi$"],correct:0,solution:"$-x^2\\cos x+2x\\sin x+2\\cos x$, thay cận = $\\pi-2$."},
+    {q:"$\\int x\\sin 2x\\,dx$ bằng?",options:["$-\\frac{x\\cos 2x}{2}+\\frac{\\sin 2x}{4}+C$","$\\frac{x\\cos 2x}{2}-\\frac{\\sin 2x}{4}+C$","$-\\frac{x\\cos 2x}{2}-\\frac{\\sin 2x}{4}+C$","$\\frac{x\\cos 2x}{2}+\\frac{\\sin 2x}{4}+C$"],correct:0,solution:"Từng phần: $-\\frac{x\\cos 2x}{2}+\\frac{\\sin 2x}{4}+C$."},
+    {q:"$\\int x^2\\ln x\\,dx$ bằng?",options:["$\\frac{x^3\\ln x}{3}-\\frac{x^3}{9}+C$","$\\frac{x^3\\ln x}{3}+\\frac{x^3}{9}+C$","$x^3\\ln x-\\frac{x^3}{3}+C$","$\\frac{x^3\\ln x}{3}-\\frac{x^3}{3}+C$"],correct:0,solution:"Từng phần: $\\frac{x^3\\ln x}{3}-\\frac{x^3}{9}+C$."},
+    {q:"$\\int_0^1 xe^{-x}dx$ bằng?",options:["$1-\\frac{2}{e}$","$\\frac{2}{e}-1$","$1+\\frac{2}{e}$","$\\frac{1}{e}$"],correct:0,solution:"Từng phần: $[-xe^{-x}-e^{-x}]_0^1=1-\\frac{2}{e}$."},
+    {q:"$\\int x\\cos^2 x\\,dx$ bằng?",options:["$\\frac{x^2}{4}+\\frac{x\\sin 2x}{4}+\\frac{\\cos 2x}{8}+C$","$\\frac{x^2}{2}+\\frac{x\\sin 2x}{2}+\\frac{\\cos 2x}{4}+C$","$\\frac{x^2}{4}-\\frac{x\\sin 2x}{4}-\\frac{\\cos 2x}{8}+C$","$\\frac{x^2}{4}+\\frac{x\\sin 2x}{2}+\\frac{\\cos 2x}{4}+C$"],correct:0,solution:"$\\cos^2 x=\\frac{1+\\cos 2x}{2}$; tách và tính từng phần: $\\frac{x^2}{4}+\\frac{x\\sin 2x}{4}+\\frac{\\cos 2x}{8}+C$."},
+    {q:"$\\int_0^1 x\\ln(x+1)dx$ bằng?",options:["$\\frac{1}{4}$","$\\frac{1}{2}$","$1$","$\\ln 2-\\frac{1}{4}$"],correct:0,solution:"Từng phần: $\\frac{1}{4}$."},
+    {q:"$\\int_0^{\\pi/2}e^x\\sin x\\,dx$ bằng?",options:["$\\frac{e^{\\pi/2}+1}{2}$","$\\frac{e^{\\pi/2}-1}{2}$","$e^{\\pi/2}$","$\\frac{e^{\\pi/2}+2}{2}$"],correct:0,solution:"$\\frac{e^x(\\sin x-\\cos x)}{2}$, thay cận = $\\frac{e^{\\pi/2}+1}{2}$."},
+    {q:"$\\int_0^{\\pi/2}e^x\\cos x\\,dx$ bằng?",options:["$\\frac{e^{\\pi/2}-1}{2}$","$\\frac{e^{\\pi/2}+1}{2}$","$\\frac{e^{\\pi/2}}{2}$","$\\frac{e^{\\pi/2}-2}{2}$"],correct:0,solution:"$\\frac{e^x(\\sin x+\\cos x)}{2}$, thay cận = $\\frac{e^{\\pi/2}-1}{2}$."},
+    {q:"$\\int x^2e^{-x}dx$ bằng?",options:["$-e^{-x}(x^2+2x+2)+C$","$e^{-x}(x^2+2x+2)+C$","$-e^{-x}(x^2-2x+2)+C$","$e^{-x}(x^2-2x+2)+C$"],correct:0,solution:"Kẻ cột: $-e^{-x}(x^2+2x+2)+C$."},
+    {q:"$\\int_0^1 x^2e^{-x}dx$ bằng?",options:["$2-\\frac{5}{e}$","$\\frac{5}{e}-2$","$2+\\frac{5}{e}$","$\\frac{5}{e}$"],correct:0,solution:"$-e^{-x}(x^2+2x+2)$, thay cận = $2-\\frac{5}{e}$."},
+    {q:"$\\int x^3\\ln x\\,dx$ bằng?",options:["$\\frac{x^4\\ln x}{4}-\\frac{x^4}{16}+C$","$\\frac{x^4\\ln x}{4}+\\frac{x^4}{16}+C$","$x^4\\ln x-\\frac{x^4}{16}+C$","$\\frac{x^4\\ln x}{4}-\\frac{x^4}{4}+C$"],correct:0,solution:"Từng phần: $\\frac{x^4\\ln x}{4}-\\frac{x^4}{16}+C$."},
+    {q:"Biết $\\int_0^{\\pi/2}e^x\\sin x\\,dx=\\frac{e^{\\pi/2}+1}{2}$. Tính $\\int_0^{\\pi/2}e^x\\cos x\\,dx$.",options:["$\\frac{e^{\\pi/2}-1}{2}$","$\\frac{e^{\\pi/2}+1}{2}$","$\\frac{e^{\\pi/2}}{2}$","$\\frac{e^{\\pi/2}-2}{2}$"],correct:0,solution:"Tương tự: $\\frac{e^x(\\sin x+\\cos x)}{2}$, thay cận = $\\frac{e^{\\pi/2}-1}{2}$."},
+    {q:"$\\int_0^{\\pi}x\\sin^2 x\\,dx$ bằng?",options:["$\\frac{\\pi^2}{4}$","$\\frac{\\pi^2}{2}$","$\\frac{\\pi^2}{8}$","$\\pi^2$"],correct:0,solution:"$\\sin^2 x=\\frac{1-\\cos 2x}{2}$; tách, phần $\\int x\\cos 2x\\,dx$ triệt tiêu tại cận → $\\frac{\\pi^2}{4}$."}
+  ]
+}
+];
+
+/* ============================================================
+   LOGIC
+   ============================================================ */
+
+// ===== TABS CHÍNH =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ===== SUB-TABS LUYỆN TẬP =====
+const practiceState = {}; // {groupIndex: {answers:{}, checked:{}}}
+document.querySelectorAll('[data-pgroup]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-pgroup]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPractice(parseInt(btn.dataset.pgroup));
+  });
+});
+
+function renderPractice(gIdx) {
+  const group = practiceGroups[gIdx];
+  const container = document.getElementById('practice-content');
+  container.innerHTML = `<h2 style="color:#1e3a8a;margin-bottom:16px;">${group.name}</h2>`;
+  if (!practiceState[gIdx]) practiceState[gIdx] = {answers:{}, checked:{}};
+  group.questions.forEach((q, i) => {
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.id = `pq-${gIdx}-${i}`;
+    let opts = q.options.map((o, j) => `<div class="opt" data-idx="${j}">${String.fromCharCode(65+j)}. ${o}</div>`).join('');
+    block.innerHTML = `
+      <div class="q-title"><span class="badge badge-${i<4?'nb':(i<7?'th':'vd')}">Câu ${i+1}</span> ${q.q}</div>
+      <div class="options">${opts}</div>
+      <button class="btn btn-primary" style="margin-top:10px;" data-check="${i}">Kiểm tra</button>
+      <div class="solution" id="sol-${gIdx}-${i}"><b>💡 Lời giải:</b> ${q.solution}</div>
+      <div class="hint" id="hint-${gIdx}-${i}"><b>📌 Gợi ý ôn tập:</b> ${q.hint || 'Xem lại lý thuyết tương ứng.'}</div>
+    `;
+    container.appendChild(block);
+    
+    // sự kiện chọn đáp án
+    block.querySelectorAll('.opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (practiceState[gIdx].checked[i]) return;
+        block.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        practiceState[gIdx].answers[i] = parseInt(opt.dataset.idx);
+      });
+    });
+    // sự kiện kiểm tra
+    block.querySelector('[data-check]').addEventListener('click', () => {
+      checkPractice(gIdx, i);
+    });
+  });
+}
+
+function checkPractice(gIdx, i) {
+  const q = practiceGroups[gIdx].questions[i];
+  const state = practiceState[gIdx];
+  if (state.checked[i]) return;
+  const chosen = state.answers[i];
+  if (chosen === undefined) { alert('Vui lòng chọn một đáp án!'); return; }
+  const block = document.getElementById(`pq-${gIdx}-${i}`);
+  const isCorrect = chosen === q.correct;
+  block.querySelectorAll('.opt').forEach((opt, j) => {
+    opt.classList.add('disabled');
+    opt.classList.remove('selected');
+    if (j === q.correct) opt.classList.add('correct-ans');
+    else if (j === chosen) opt.classList.add('wrong-ans');
+  });
+  block.classList.add(isCorrect ? 'correct' : 'wrong');
+  document.getElementById(`sol-${gIdx}-${i}`).classList.add('show');
+  if (!isCorrect) document.getElementById(`hint-${gIdx}-${i}`).classList.add('show');
+  block.querySelector('[data-check]').disabled = true;
+  block.querySelector('[data-check]').textContent = isCorrect ? '✅ Đúng' : '❌ Sai';
+  state.checked[i] = true;
+}
+
+// ===== SUB-TABS THI =====
+let currentTimedGroup = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let timedState = {}; // {gIdx: {answers:{}, submitted:false}}
+
+document.querySelectorAll('[data-tgroup]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (confirm('Bạn có chắc muốn chuyển nhóm? Tiến trình nhóm hiện tại sẽ bị mất.')) {
+      document.querySelectorAll('[data-tgroup]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      currentTimedGroup = parseInt(btn.dataset.tgroup);
+      renderTimed(currentTimedGroup);
+    }
+  });
+});
+
+function renderTimed(gIdx) {
+  const group = timedGroups[gIdx];
+  const container = document.getElementById('timed-content');
+  if (!timedState[gIdx]) timedState[gIdx] = {answers:{}, submitted:false};
+  const st = timedState[gIdx];
+  
+  container.innerHTML = `
+    <div class="timer-bar">
+      <div>
+        <b>${group.name}</b> &nbsp;·&nbsp; <span style="color:#64748b;font-size:13px;">${group.questions.length} câu · ${group.duration} phút</span>
+      </div>
+      <div>
+        <span class="timer ok" id="timer-display">--:--</span>
+        <button class="btn btn-success" id="btn-submit" style="margin-left:12px;">Nộp bài</button>
+      </div>
+    </div>
+    <div id="timed-questions"></div>
+    <div class="result-box" id="result-box"></div>
+  `;
+  
+  const qContainer = document.getElementById('timed-questions');
+  group.questions.forEach((q, i) => {
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.id = `tq-${gIdx}-${i}`;
+    let opts = q.options.map((o, j) => `<div class="opt" data-idx="${j}">${String.fromCharCode(65+j)}. ${o}</div>`).join('');
+    block.innerHTML = `
+      <div class="q-title"><span class="badge badge-${i<8?'nb':(i<15?'th':'vd')}">Câu ${i+1}</span> ${q.q}</div>
+      <div class="options">${opts}</div>
+    `;
+    qContainer.appendChild(block);
+    block.querySelectorAll('.opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (st.submitted) return;
+        block.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        st.answers[i] = parseInt(opt.dataset.idx);
+      });
+    });
+  });
+  
+  // Nếu đã nộp trước đó, khôi phục trạng thái
+  if (st.submitted) {
+    restoreSubmittedTimed(gIdx);
+    document.getElementById('btn-submit').disabled = true;
+    document.getElementById('btn-submit').textContent = 'Đã nộp';
+    document.getElementById('timer-display').textContent = '00:00';
+    document.getElementById('timer-display').className = 'timer';
+  } else {
+    // bắt đầu đếm ngược
+    timeLeft = group.duration * 60;
+    updateTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        submitTimed(gIdx);
+      }
+    }, 1000);
+  }
+  
+  document.getElementById('btn-submit').addEventListener('click', () => {
+    if (!st.submitted && confirm('Bạn có chắc muốn nộp bài?')) {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      submitTimed(gIdx);
+    }
+  });
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-display');
+  if (!el) return;
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer ' + (timeLeft < 60 ? 'warn' : timeLeft < 180 ? 'warn' : 'ok');
+}
+
+function submitTimed(gIdx) {
+  const group = timedGroups[gIdx];
+  const st = timedState[gIdx];
+  st.submitted = true;
+  
+  let correct = 0, wrong = 0, blank = 0;
+  const wrongList = [];
+  
+  group.questions.forEach((q, i) => {
+    const block = document.getElementById(`tq-${gIdx}-${i}`);
+    if (!block) return;
+    const chosen = st.answers[i];
+    block.querySelectorAll('.opt').forEach((opt, j) => {
+      opt.classList.add('disabled');
+      opt.classList.remove('selected');
+      if (j === q.correct) opt.classList.add('correct-ans');
+      else if (j === chosen) opt.classList.add('wrong-ans');
+    });
+    if (chosen === undefined) {
+      blank++;
+      block.classList.add('wrong');
+      wrongList.push({i, chosen: 'Chưa chọn', q});
+    } else if (chosen === q.correct) {
+      correct++;
+      block.classList.add('correct');
+    } else {
+      wrong++;
+      block.classList.add('wrong');
+      wrongList.push({i, chosen: String.fromCharCode(65+chosen), q});
+    }
+  });
+  
+  const score = ((correct / group.questions.length) * 10).toFixed(2);
+  const resultBox = document.getElementById('result-box');
+  let reviewHTML = '';
+  if (wrongList.length > 0) {
+    reviewHTML = `
+      <div class="review-list">
+        <h4>📌 Gợi ý ôn tập cho ${wrongList.length} câu chưa đúng:</h4>
+        <ul>
+          ${wrongList.map(w => `<li><b>Câu ${w.i+1}:</b> Bạn chọn ${w.chosen}. Đáp án đúng: <b>${String.fromCharCode(65+w.q.correct)}</b>. ${w.q.solution}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  } else {
+    reviewHTML = `<div style="background:#f0fdf4;padding:14px;border-radius:8px;color:#065f46;"><b>🎉 Xuất sắc! Bạn đã làm đúng tất cả.</b></div>`;
+  }
+  
+  resultBox.innerHTML = `
+    <h3 style="text-align:center;color:#1e3a8a;">📊 Kết quả bài thi</h3>
+    <div class="score-display">${score}/10</div>
+    <div class="stat-row">
+      <div class="stat-item"><div class="num" style="color:#10b981;">${correct}</div><div class="lbl">Đúng</div></div>
+      <div class="stat-item"><div class="num" style="color:#ef4444;">${wrong}</div><div class="lbl">Sai</div></div>
+      <div class="stat-item"><div class="num" style="color:#f59e0b;">${blank}</div><div class="lbl">Bỏ trống</div></div>
+      <div class="stat-item"><div class="num">${group.questions.length}</div><div class="lbl">Tổng</div></div>
+    </div>
+    ${reviewHTML}
+  `;
+  resultBox.classList.add('show');
+  resultBox.scrollIntoView({behavior:'smooth'});
+  
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('btn-submit').textContent = 'Đã nộp';
+}
+
+function restoreSubmittedTimed(gIdx) {
+  // Khôi phục trạng thái hiển thị khi quay lại nhóm đã nộp
+  const group = timedGroups[gIdx];
+  const st = timedState[gIdx];
+  let correct = 0, wrong = 0, blank = 0;
+  const wrongList = [];
+  group.questions.forEach((q, i) => {
+    const block = document.getElementById(`tq-${gIdx}-${i}`);
+    if (!block) return;
+    const chosen = st.answers[i];
+    block.querySelectorAll('.opt').forEach((opt, j) => {
+      opt.classList.add('disabled');
+      opt.classList.remove('selected');
+      if (j === q.correct) opt.classList.add('correct-ans');
+      else if (j === chosen) opt.classList.add('wrong-ans');
+    });
+    if (chosen === undefined) { blank++; block.classList.add('wrong'); wrongList.push({i, chosen:'Chưa chọn', q}); }
+    else if (chosen === q.correct) { correct++; block.classList.add('correct'); }
+    else { wrong++; block.classList.add('wrong'); wrongList.push({i, chosen: String.fromCharCode(65+chosen), q}); }
+  });
+  const score = ((correct/group.questions.length)*10).toFixed(2);
+  const resultBox = document.getElementById('result-box');
+  let reviewHTML = wrongList.length > 0
+    ? `<div class="review-list"><h4>📌 Gợi ý ôn tập cho ${wrongList.length} câu chưa đúng:</h4><ul>${wrongList.map(w=>`<li><b>Câu ${w.i+1}:</b> Bạn chọn ${w.chosen}. Đáp án đúng: <b>${String.fromCharCode(65+w.q.correct)}</b>. ${w.q.solution}</li>`).join('')}</ul></div>`
+    : `<div style="background:#f0fdf4;padding:14px;border-radius:8px;color:#065f46;"><b>🎉 Xuất sắc!</b></div>`;
+  resultBox.innerHTML = `<h3 style="text-align:center;color:#1e3a8a;">📊 Kết quả bài thi</h3><div class="score-display">${score}/10</div>
+    <div class="stat-row">
+      <div class="stat-item"><div class="num" style="color:#10b981;">${correct}</div><div class="lbl">Đúng</div></div>
+      <div class="stat-item"><div class="num" style="color:#ef4444;">${wrong}</div><div class="lbl">Sai</div></div>
+      <div class="stat-item"><div class="num" style="color:#f59e0b;">${blank}</div><div class="lbl">Bỏ trống</div></div>
+      <div class="stat-item"><div class="num">${group.questions.length}</div><div class="lbl">Tổng</div></div>
+    </div>${reviewHTML}`;
+  resultBox.classList.add('show');
+}
+
+// Render mặc định
+renderPractice(0);
+renderTimed(0);
+</script>
+</body>
+</html>
